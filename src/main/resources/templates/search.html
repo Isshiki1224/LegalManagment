@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>法律法规搜索</title>
+    <!-- Bootstrap core CSS -->
+    <link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.0.0/css/bootstrap.css}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="asserts/css/signin.css" th:href="@{/asserts/css/signin.css}" rel="stylesheet">
+    <link href="" th:href="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.css}" rel="stylesheet">
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/popper.js/1.11.1/dist/popper.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/4.0.0/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.js}"></script>
+    <script type="text/javascript"
+            th:src="@{/webjars/bootstrap-table/1.15.5/dist/locale/bootstrap-table-zh-CN.js}"></script>
+    <script>
+        $(function () {
+
+
+        });
+    </script>
+</head>
+<body class="text-center">
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    <form class="form-search">
+        <h1 class="h3 mb-3 font-weight-normal">法律法规搜索</h1>
+        <input type="text" class="form-control" id="searchContent" required="" autofocus="">
+        <button class="btn btn-lg btn-primary btn-block" id="search-btn" type="button">搜索</button>
+        <div class="checkbox mb-3">
+            <label>按标题搜索</label>
+            <input type="radio" name="optionsRadios" id="optionsRadios1"
+                   value="title" checked>
+            <label>按正文搜索</label>
+            <input type="radio" name="optionsRadios" id="optionsRadios2"
+                   value="content">
+        </div>
+    </form>
+
+
+    <table id="myTable"></table>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <table class="table" >
+                    <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>公布机关</th>
+                        <th>公布日期</th>
+                        <th>性质</th>
+                        <th>行业类别</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="legal : ${legals.list}">
+                            <td th:text="${legal.title}"></td>
+                            <td th:text="${legal.office}"></td>
+                            <td th:text="${#dates.format(legal.publicDate, 'yyyy-MM-dd')}"></td>
+                            <td th:text="${legal.kind}"></td>
+                            <td th:text="${legal.category}"></td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

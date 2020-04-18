@@ -1,0 +1,86 @@
+/***********��ҳ����************/
+.m-height{height:80px;}
+.w_logo{ text-align:center;height:80px;margin-top:10px;}
+
+.slideGroup{ width:840px; margin:30px auto}	
+.slideGroup .slideBox{ overflow:hidden; zoom:1; padding:10px 0 10px 60px; position:relative;   }
+.slideGroup .sPrev,.slideGroup .sNext{ position:absolute; left:5px; top:60px; display:block; width:36px; height:73px; }
+.slideGroup .sNext{ left:auto; right:5px;  }
+.slideGroup ul{ overflow:hidden; zoom:1;   }
+.slideGroup ul li{ margin:0 5px; float:left; _display:inline; overflow:hidden; text-align:center;  }
+.slideGroup ul li .pic{ text-align:center; }
+.slideGroup ul li .pic img{ width:134px; height:198px; display:block;}
+
+.txtScrollBox{ width:620px; margin:0 auto;padding:10px 0;height:144px;}
+.txt{}
+.txt a{ font-size:16px; color:#295eab; font-weight:600;}
+.txtScroll-top{ overflow:hidden; position:relative; }
+.txtScroll-top .bd{ }
+.txtScroll-top .infoList li{}
+.txtScroll-top .infoList li a{ font-size:16px; color:#3c3c3c;font-weight:600;}
+
+.w_mb{ font-size:14px; color:#4a4a4a; text-align:center;height:43px;}
+
+/***********������ϸҳ-English************/
+
+
+.w_d_title{ height:36px; line-height:36px; border-bottom:3px solid #295eab;}
+.w_d_title a{color:#295eab; display:inline-block;}
+.w_d_titleL{padding-left:25px;}
+.w_d_title a.viewPDF{padding-left:18px;margin-right:15px;}
+.w_d_title a.chinese{padding-left:21px;margin-right:15px;}
+.w_d_titleR{padding-right:10px;}
+.w_d_titleR a{padding:0 5px;}
+
+.detailCon{}
+.detailCon .conTit{ font-size:18px; font-weight:500; text-align:center;margin:10px 0;}
+.conList{ overflow:hidden;padding:0 135px;}
+.conList li{ float:left; line-height:18px; font-size:12px;}
+.conList li.width60{ width:60%;}
+.conList li span{ color:#e4a963;font-size:12px; display:inline-block;margin-right:5px;}
+
+.detailCon .con{ padding:25px 20px 55px;font-size:14px;}
+.detailCon .con table{margin:15px 0;}
+.detailCon .con table p{word-wrap:break-word;margin-bottom:10px;}
+.detailCon .con p{word-wrap:break-word;margin-bottom:15px;}
+.textAlignCenter{ text-align:center;}
+.textAlignRight{ text-align:right;}
+.smallFont{font-size:12px;}
+.medFont{font-size:14px;}
+.largeFont{font-size:16px;}
+
+.page{margin:0 20px;padding:10px 0; border-top:2px solid #295eab; text-align:right; overflow:hidden;}
+.page a{ display:inline-block;margin:0 10px; }
+.page input{ display:inline-block;margin-left:10px; height:22px; width:40px; border:1px solid #d2d2d2; float:right;}
+.page span{ display:inline-block;margin:0 10px; font-size:18px; float:right; }
+
+/***********������ϸҳ************/
+.mainRig{width:713px;}
+.w_bT{  height:3px; overflow:hidden;}
+.w_bC{overflow:hidden;padding:0 5px 0 3px;}
+.w_bB{  height:5px; overflow:hidden;}
+
+.w_d_title a.english{padding-left:21px;margin-right:15px;}
+.d_infor{ color:#989898; text-align:center; font-size:12px;}
+.d_infor span{ display:inline-block; margin:0 5px;}
+
+.w_d_titleR a.export{padding-left:20px;margin-left:7px;}
+/***.con span{ color:#e4a963;} ***/
+
+.law21{text-align:center;font-size:1.2em;padding-bottom:20px}
+.law22{text-align:center;font-size:1.2em;padding-bottom:20px}
+.law23{text-align:center;font-size:1.2em;padding-bottom:20px}
+
+/***********������������������************/
+
+
+
+
+
+
+
+
+
+
+
+

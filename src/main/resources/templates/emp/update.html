@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+	<head>
+		<meta http-equiv="Content-Type" content="multipart/form-data; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>修改法律法规</title>
+		<!-- Bootstrap core CSS -->
+		<link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.0.0/css/bootstrap.css}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+
+
+		<style type="text/css">
+			/* Chart.js */
+			
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!--引入抽取的topbar-->
+		<!--模板名：会使用thymeleaf的前后缀配置规则进行解析-->
+		<div th:replace="commons/bar::topbar"></div>
+
+		<div class="container-fluid">
+			<div class="row">
+				<!--引入侧边栏-->
+				<div th:replace="commons/bar::#sidebar(activeUri='emps')"></div>
+
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+					<!--需要区分是员工修改还是添加；-->
+					<form id="UpdateForm" method="post" enctype="multipart/form-data">
+						<!--发送put请求修改员工数据-->
+						<!--
+						1、SpringMVC中配置HiddenHttpMethodFilter;（SpringBoot自动配置好的）
+						2、页面创建一个post表单
+						3、创建一个input项，name="_method";值就是我们指定的请求方式
+						-->
+						<input type="hidden" name="_method" value="put" th:if="${legal!=null}"/>
+						<input type="hidden" name="id" th:if="${legal!=null}" th:value="${legal.id}">
+						<div class="form-group">
+							<label>标题</label>
+							<input name="title" type="text" class="form-control"  th:value="${legal!=null}?${legal.title}">
+						</div>
+						<div class="form-group">
+							<label>公布机关</label>
+							<input name="office" type="text" class="form-control" th:value="${legal!=null}?${legal.office}">
+						</div>
+						<div class="form-group">
+							<label>公布时间</label>
+							<input name="publicDate" type="date" class="form-control" th:value="${legal!=null}?${#dates.format(legal.publicDate, 'yyyy-MM-dd')}">
+						</div>
+						<div class="form-group">
+							<label>施行时间</label>
+							<input name="executeDate" type="date" class="form-control" th:value="${legal!=null}?${#dates.format(legal.executeDate, 'yyyy-MM-dd')}">
+						</div>
+						<div class="form-group">
+							<label>效力</label>
+							<input name="efficacy" type="text" class="form-control" th:value="${legal!=null}?${legal.efficacy}">
+						</div>
+						<div class="form-group">
+							<label>性质</label>
+							<input name="kind" type="text" class="form-control" th:value="${legal!=null}?${legal.kind}">
+						</div>
+						<div class="form-group">
+							<label>行业类别</label>
+							<input name="category" type="text" class="form-control" th:value="${legal!=null}?${legal.category}">
+						</div>
+
+						<div class="form-group">
+							<label>内容</label>
+							<input type="file" name="file" class="form-control">
+						</div>
+						<div class="form-group">
+							<input type="text" name="id" class="form-control" th:value="${legal.id}">
+						</div>
+						<button  id="sub-btn" type="button" class="btn btn-primary">修改</button>
+						<button  id="cancel-btn" type="button" class="btn btn-primary">取消</button>
+					</form>
+				</main>
+			</div>
+		</div>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
+		<script type="text/javascript" src="asserts/js/popper.min.js" th:src="@{/webjars/popper.js/1.11.1/dist/popper.js}"></script>
+		<script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.0.0/js/bootstrap.js}"></script>
+
+		<!-- Icons -->
+		<script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+		<script>
+			feather.replace()
+		</script>
+		<script>
+			$(function () {
+				$("#sub-btn").on("click",function () {
+					var formData = new FormData($('#UpdateForm')[0]);
+					$.ajax({
+						type: 'post',
+						url: "addLegal",
+						data: formData,
+						cache: false,
+						processData: false,
+						contentType: false,
+						success: function (data) {
+							if(!data.status){
+                                alert(data.msg);
+                                window.location.href="/list";
+                            }else{
+                                alert(data.msg);
+                            }
+
+						},
+						error: function () {
+							alert("请求失败");
+						}
+					});
+				});
+
+				$("#cancel-btn").on("click",function () {
+					history.back(-1);
+				});
+
+			});
+		</script>
+
+	</body>
+
+</html>

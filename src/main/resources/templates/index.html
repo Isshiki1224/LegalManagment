@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="/webjars/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $(function () {
+
+            $("#myTable").bootstrapTable({
+                url:"/selectAll",  //请求地址
+                method: 'get',
+                striped : true, //是否显示行间隔色
+                pageNumber : 1, //初始化加载第一页
+                pagination : true,//是否分页
+                singleSelect : true,// 单选checkbox
+                sidePagination : 'client',//server:服务器端分页|client：前端分页
+                pageSize : 5,//单页记录数
+                pageList : [ 5, 10],//可选择单页记录数
+                showRefresh : false,//刷新按钮
+                columns : [ {
+                    checkbox: true
+                },{
+                    title : '标题',
+                    field : 'title'
+
+                }, {
+                    title : '公布机关',
+                    field : 'office'
+
+                }, {
+                    title : '公布日期',
+                    field : 'publicDate'
+
+                }]
+            })
+
+
+
+        $("#upload").click(function () {
+
+
+
+
+            var formData = new FormData($('#uploadForm')[0]);
+            $.ajax({
+                type: 'post',
+                url: "add",
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    /*if(!data.status){
+                        alert(data.msg);
+                    }else{
+                        alert(data.msg);
+                    }*/
+                    alert(data.msg);
+                },
+                error: function () {
+                    alert("请求失败");
+                }
+            });
+        });
+    });
+
+</script>
+<body>
+<form method="POST" enctype="multipart/form-data" id="uploadForm">
+    File to upload:
+    <input type="file" name="file">
+
+</form>
+    <button id="upload">上传文件</button>
+</body>
+</html>

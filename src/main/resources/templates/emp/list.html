@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>法律法规管理</title>
+		<!-- Bootstrap core CSS -->
+		<link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.0.0/css/bootstrap.css}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+
+		<link href="" th:href="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.css}" rel="stylesheet">
+
+
+		<style type="text/css">
+			/* Chart.js */
+			
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+		</style>
+
+
+	</head>
+
+	<body>
+		<!--引入抽取的topbar-->
+		<!--模板名：会使用thymeleaf的前后缀配置规则进行解析-->
+
+		<div th:replace="commons/bar::topbar"></div>
+
+		<div class="container-fluid">
+			<div class="row">
+				<!--引入侧边栏-->
+				<div th:replace="commons/bar::#sidebar(activeUri='emps')"></div>
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+					<h2>
+						<a class="btn btn-sm btn-success" th:href="@{/legalPage}">新增法律法规</a>
+						<a class="btn btn-sm btn-success" href="#" id="update-btn">修改</a>
+						<a class="btn btn-sm btn-success" href="#" id="delete-btn">删除</a>
+						<a class="btn btn-sm btn-success" href="#" id="download-btn">导出</a>
+					</h2>
+
+					<table id="myTable"></table>
+				</main>
+			</div>
+		</div>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<!--<script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>-->
+		<script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+		<script type="text/javascript" th:src="@{/webjars/popper.js/1.11.1/dist/popper.js}"></script>
+		<script type="text/javascript" th:src="@{/webjars/bootstrap/4.0.0/js/bootstrap.js}"></script>
+		<script type="text/javascript" th:src="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.js}"></script>
+		<script type="text/javascript" th:src="@{/webjars/bootstrap-table/1.15.5/dist/locale/bootstrap-table-zh-CN.js}"></script>
+
+
+
+		<!-- Icons -->
+		<script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+		<script>
+			feather.replace()
+		</script>
+		<script>
+			$(document).ready(function () {
+                var myTable = $("#myTable");
+                var row;
+
+					function onload(){
+                        $("#myTable").bootstrapTable({
+                            url : "/selectAll",  //请求地址
+                            method: 'get',
+                            dataType : "json",
+                            striped : true, //是否显示行间隔色
+                            pageNumber : 1, //初始化加载第一页
+                            pagination : true,//是否分页
+                            singleSelect : true,// 单选checkbox
+                            sidePagination : 'client',//server:服务器端分页|client：前端分页
+                            pageSize : 5,//单页记录数
+                            pageList : [ 5, 10],//可选择单页记录数
+                            showRefresh : false,//刷新按钮
+                            columns : [ {
+                                checkbox: true
+                            },{
+                                title : '标题',
+                                field : 'title',
+                                formatter: function(value, row, index) {
+                                    return [
+                                        '<a href="/detailPage?id='+row.id+'" class="fileDetail">'+value+'</a>'
+                                    ].join("");
+                                }
+
+                            }, {
+                                title : '公布机关',
+                                field : 'office'
+
+                            }, {
+                                title : '公布日期',
+                                field : 'publicDate'
+
+                            },{
+                                title : '性质',
+                                field : 'kind'
+                            },{
+                                title : '行业类别',
+                                field : 'category'
+                            }]
+                        });
+                    }
+                    onload();
+                // myTable.on("click",".fileDetail",function () {
+                //     row = myTable.bootstrapTable('getSelections');
+                //     window.location.href = "/updatePage?id="+row[0].id;
+                //     });
+
+				$("#download-btn").on("click",function () {
+					row = myTable.bootstrapTable('getSelections');
+					var filePath = row[0].filePath;
+					window.location.href="/download?filePath="+filePath;
+
+
+				});
+
+				$("#update-btn").on("click",function () {
+					row = myTable.bootstrapTable('getSelections');
+					window.location.href = "/updatePage?id="+row[0].id;
+				});
+
+                $("#delete-btn").on("click",function () {
+                    row = myTable.bootstrapTable('getSelections');
+                    $.post("delete","id="+row[0].id,callBack);
+                });
+
+                var callBack = function (data) {
+                    if(!data.status){
+                        alert(data.msg);
+                        window.location.reload();
+                    }else{
+                        alert(data.msg);
+                    }
+                }
+
+			});
+
+
+
+
+
+		</script>
+	</body>
+</html>

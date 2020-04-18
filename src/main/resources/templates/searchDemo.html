@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>法律法规搜索</title>
+    <!-- Bootstrap core CSS -->
+    <link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.0.0/css/bootstrap.css}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="asserts/css/signin.css" th:href="@{/asserts/css/signin.css}" rel="stylesheet">
+    <link href="" th:href="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.css}" rel="stylesheet">
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/popper.js/1.11.1/dist/popper.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/4.0.0/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap-table/1.15.5/dist/bootstrap-table.js}"></script>
+    <script type="text/javascript"
+            th:src="@{/webjars/bootstrap-table/1.15.5/dist/locale/bootstrap-table-zh-CN.js}"></script>
+    <script>
+        $(function () {
+            var searchContent;
+            var url = "/SearchLawTitle";
+
+            function changeType(type) {
+                var searchForm = document.getElementById("searchForm");
+                if (type == 1) {
+                    searchForm.action = "/SearchLawTitle";
+                } else {
+                    searchForm.action = "/SearchLaw";
+                }
+            }
+
+            function onload() {
+                $("#myTable").bootstrapTable({
+                    url: url,  //请求地址
+                    method: 'get',
+                    dataType: "json",
+                    striped: true, //是否显示行间隔色
+                    pageNumber: 1, //初始化加载第一页
+                    pagination: true,//是否分页
+                    singleSelect: true,// 单选checkbox
+                    sidePagination: 'client',//server:服务器端分页|client：前端分页
+                    pageSize: 5,//单页记录数
+                    pageList: [5, 10],//可选择单页记录数
+                    showRefresh: false,//刷新按钮
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        title: '标题',
+                        field: 'title',
+                        formatter: function (value, row, index) {
+                            return [
+                                '<a href="/detailPage?id=' + row.id + '" class="fileDetail">' + value + '</a>'
+                            ].join("");
+                        }
+
+                    }, {
+                        title: '公布机关',
+                        field: 'office'
+
+                    }, {
+                        title: '公布日期',
+                        field: 'publicDate'
+
+                    }, {
+                        title: '性质',
+                        field: 'kind'
+                    }, {
+                        title: '行业类别',
+                        field: 'category'
+                    }]
+                });
+            }
+
+            $("#search-btn").on("click", function () {
+                var searchForm = document.getElementById("searchForm");
+                searchForm.submit();
+            });
+        });
+
+
+    </script>
+</head>
+<body class="text-center">
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+
+    <form class="form-search" id="searchForm" method="get" action="/SearchLawTitle">
+        <h1 class="h3 mb-3 font-weight-normal">法律法规搜索</h1>
+        <input type="text" class="form-control" id="searchContent" required="" autofocus="">
+        <button class="btn btn-lg btn-primary btn-block" id="search-btn" type="button">搜索</button>
+        <div style="padding-top:8px;clear:both;text-align: center;">
+            <label style="font-size:16px"><input value="1" name="Type" type="radio" checked=&quot;checked&quot;
+                                                 onclick="changeType(1)"/>按标题检索</label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <label style="font-size:16px"><input value="2" name="Type" type="radio"
+                                                 onclick="changeType(2)"/>按正文检索</label>
+            <!--   <span style="float:right;">最新更新：${format(ModifyTime,'yyyy-MM-dd')}</span>-->
+        </div>
+    </form>
+
+    <table id="myTable"></table>
+
+</main>
+</body>
+</html>

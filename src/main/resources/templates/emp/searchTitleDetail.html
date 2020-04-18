@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>法律法规数据库-详细页</title>
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link th:href="@{/common.css}" type="text/css" rel="stylesheet"/>
+    <link th:href="@{/wjl_style.css}" type="text/css" rel="stylesheet"/>
+    <script type="text/javascript" th:src="@{/jquery-1.8.3.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery.SuperSlide.2.1.js}"></script>
+    <script type="text/javascript" th:src="@{/common.js}"></script>
+    <style>
+        ul.list li {
+            height: 25px;
+            overflow: hidden;
+        }
+
+        ul.list {
+            padding-left: 1em
+        }
+
+        li.section {
+            padding-left: 4em;
+        }
+
+        li.chapter {
+            padding-left: 2em;
+        }
+
+        .mainRig {
+            width: 100%;
+        }
+
+        .w_bC {
+            background: white;
+            border: 3px solid #ffffff;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+<!--** 头部开始 **-->
+
+
+<div class="head pageWidth">
+    <div class="logo fl"><a href="#;">法律法规数据库</a></div>
+    <div class="headRig fr">
+        <span id="myTime"></span>
+        <a href="/list" class="index">首页</a>
+        <!-- <a href="javascript:window.history.back()" class="return">返回</a> -->
+    </div>
+</div>
+<script>
+    getTime();
+    setInterval("getTime()", 1000);
+
+    function getTime() {
+        $("#myTime").html(new Date().toLocaleString());
+    }
+</script>
+
+<!--** 头部结束 **-->
+
+<!--** 主体开始 **-->
+<div class="main pageWidth">
+    <div class="position"><a href="/list">首页</a></div>
+    <div class="mainCon clearself">
+        <div class="mainRig fr">
+            <div class="w_bC">
+                <div class="w_d_title clearself">
+                    <!--<div class="w_d_titleL fl">
+                    <a class="viewPDF" href="${Law.ZH_PDF!=''?FrontAppContext+Law.ZH_PDF:''}" >查看PDF版</a>
+                    <a class="english" href="${FrontAppContext}law/englishDetail?LawID=${Law.ID}">English</a>
+                    </div>-->
+                </div>
+                <div class="detailCon">
+                    <!-- <data:list method="Law.history">
+                        <z:if condition="${Count>1}">
+                            <div class="history">
+                            <p>${Law.Title}<span style="white-space:nowrap;">&nbsp;&nbsp;变迁历史></span></p>
+                              <table class="d_infor" style="margin: auto;">
+                              <z:list>
+                                <tr align="left">
+                                  <td align="left" width="80" valign="top">${format(Data.PublishTime,"yyyy.MM.dd")}</td>
+                                  <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                  <td><a href="${Data.url}">${Data.Title}</a></td>
+                                </tr>
+                              </z:list>
+                              </table>
+                            </div>
+                        </z:if>
+                    </data:list> -->
+                    <div class="conTit" th:text="${legal.title}"></div>
+                    <table class="d_infor" style="margin: auto;">
+                        <tr align="left">
+                            <td align="right" width="80">公布机关：</td>
+                            <td width="400" th:text="${legal.office}"></td>
+                        </tr>
+                        <tr align="left">
+                            <td align="right" width="80">公布日期：</td>
+                            <td width="200" th:text="${#dates.format(legal.publicDate, 'yyyy-MM-dd')}"></td>
+                            <td align="right" width="80">施行日期：</td>
+                            <td width="200" th:text="${#dates.format(legal.executeDate, 'yyyy-MM-dd')}"></td>
+                            <!-- <td align="right" width="80">效力级别：</td><td width="200">${Law.EffectLevelName}</td> -->
+                        </tr>
+                        <tr align="left">
+                            <td align="right" width="80">效力：</td>
+                            <td width="200" th:text="${legal.efficacy}"></td>
+                            <td align="right" width="80">门类：</td>
+                            <td width="200" th:text="${legal.category}"></td>
+                        </tr>
+
+
+                    </table>
+                    <div class="con" id="water_div">
+                        <!--<p class="textAlignCenter">（2009年2月28日第十一届全国人民代表大会常务委员会第七次会议通过　根据2015年4月24日第十二届全国人民代表大会常务委员会第十四次会议修订　根据2018年12月29日第十三届全国人民代表大会常务委员会第七次会议《全国人民代表大会常务委员会关于修改＜中华人民共和国产品质量法＞等五部法律的决定》修正）</p>-->
+                        <p class="textAlignRight"></p>
+                        <p></p>
+
+
+                        <!--<p id="154709776367000" class='textAlignCenter' style="font-size:1.2em;padding-bottom:20px">目录</p>-->
+
+
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>&nbsp;</td>-->
+                        <!--<td><p>　　第一章　总则</p><p>　　第二章　食品<font color='red'>安全</font>风险监测和评估</p><p>　　第三章　食品<font color='red'>安全</font>标准</p><p>　　第四章　食品生产经营</p><p>　　第一节　一般规定</p><p>　　第二节　生产经营过程控制</p><p>　　第三节　标签、说明书和广告</p><p>　　第四节　特殊食品</p><p>　　第五章　食品检验</p><p>　　第六章　食品进出口</p><p>　　第七章　食品<font color='red'>安全</font>事故处置</p><p>　　第八章　监督管理</p><p>　　第九章　法律责任</p><p>　　第十章　附则</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <hr>
+                        <table border=0 th:each="term : ${legal.terms}">
+                            <tr valign=top>
+                                <p id="154709776367300" class='textAlignCenter'
+                                   style="font-size:1.2em;padding-bottom:20px" th:text="${term.chapterContent}"></p>
+                                <p id="154709776375700" class='textAlignCenter'
+                                   style="font-size:1.2em;padding-bottom:20px" th:text="${term.sectionContent}"></p>
+                                <!--<td nowrap th:text="${term.item}">&nbsp;</td>-->
+                                <!--<td nowrap>第一条&nbsp;</td>-->
+                                <td><p th:text="${term.content}"></p></td>
+                            </tr>
+                        </table>
+
+                        <hr>
+
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第二条&nbsp;</td>-->
+                        <!--<td><p>　　在中华人民共和国境内从事下列活动，应当遵守本法：</p><p>　　（一）食品生产和加工（以下称食品生产），食品销售和餐饮服务（以下称食品经营）；</p><p>　　（二）食品添加剂的生产经营；</p><p>　　（三）用于食品的包装材料、容器、洗涤剂、消毒剂和用于食品生产经营的工具、设备（以下称食品相关产品）的生产经营；</p><p>　　（四）食品生产经营者使用食品添加剂、食品相关产品；</p><p>　　（五）食品的贮存和运输；</p><p>　　（六）对食品、食品添加剂、食品相关产品的<font color='red'>安全</font>管理。</p><p>　　供食用的源于农业的初级产品（以下称食用农产品）的质量<font color='red'>安全</font>管理，遵守《中华人民共和国农产品质量<font color='red'>安全</font>法》的规定。但是，食用农产品的市场销售、有关质量<font color='red'>安全</font>标准的制定、有关<font color='red'>安全</font>信息的公布和本法对农业投入品作出规定的，应当遵守本法的规定。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第三条&nbsp;</td>-->
+                        <!--<td><p>　　食品<font color='red'>安全</font>工作实行预防为主、风险管理、全程控制、社会共治，建立科学、严格的监督管理制度。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第四条&nbsp;</td>-->
+                        <!--<td><p>　　食品生产经营者对其生产经营食品的<font color='red'>安全</font>负责。</p><p>　　食品生产经营者应当依照法律、法规和食品<font color='red'>安全</font>标准从事生产经营活动，保证食品<font color='red'>安全</font>，诚信自律，对社会和公众负责，接受社会监督，承担社会责任。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第五条&nbsp;</td>-->
+                        <!--<td><p>　　国务院设立食品<font color='red'>安全</font>委员会，其职责由国务院规定。</p><p>　　国务院食品<font color='red'>安全</font>监督管理部门依照本法和国务院规定的职责，对食品生产经营活动实施监督管理。</p><p>　　国务院卫生行政部门依照本法和国务院规定的职责，组织开展食品<font color='red'>安全</font>风险监测和风险评估，会同国务院食品<font color='red'>安全</font>监督管理部门制定并公布食品<font color='red'>安全</font>国家标准。</p><p>　　国务院其他有关部门依照本法和国务院规定的职责，承担有关食品<font color='red'>安全</font>工作。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第六条&nbsp;</td>-->
+                        <!--<td><p>　　县级以上地方人民政府对本行政区域的食品<font color='red'>安全</font>监督管理工作负责，统一领导、组织、协调本行政区域的食品<font color='red'>安全</font>监督管理工作以及食品<font color='red'>安全</font>突发事件应对工作，建立健全食品<font color='red'>安全</font>全程监督管理工作机制和信息共享机制。</p><p>　　县级以上地方人民政府依照本法和国务院的规定，确定本级食品<font color='red'>安全</font>监督管理、卫生行政部门和其他有关部门的职责。有关部门在各自职责范围内负责本行政区域的食品<font color='red'>安全</font>监督管理工作。</p><p>　　县级人民政府食品<font color='red'>安全</font>监督管理部门可以在乡镇或者特定区域设立派出机构。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第七条&nbsp;</td>-->
+                        <!--<td><p>　　县级以上地方人民政府实行食品<font color='red'>安全</font>监督管理责任制。上级人民政府负责对下一级人民政府的食品<font color='red'>安全</font>监督管理工作进行评议、考核。县级以上地方人民政府负责对本级食品<font color='red'>安全</font>监督管理部门和其他有关部门的食品<font color='red'>安全</font>监督管理工作进行评议、考核。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第八条&nbsp;</td>-->
+                        <!--<td><p>　　县级以上人民政府应当将食品<font color='red'>安全</font>工作纳入本级国民经济和社会发展规划，将食品<font color='red'>安全</font>工作经费列入本级政府财政预算，加强食品<font color='red'>安全</font>监督管理能力建设，为食品<font color='red'>安全</font>工作提供保障。</p><p>　　县级以上人民政府食品<font color='red'>安全</font>监督管理部门和其他有关部门应当加强沟通、密切配合，按照各自职责分工，依法行使职权，承担责任。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!---->
+                        <!--<table border=0>-->
+                        <!--<tr valign=top>-->
+                        <!--<td nowrap>第九条&nbsp;</td>-->
+                        <!--<td><p>　　食品行业协会应当加强行业自律，按照章程建立健全行业规范和奖惩机制，提供食品<font color='red'>安全</font>信息、技术等服务，引导和督促食品生产经营者依法生产经营，推动行业诚信建设，宣传、普及食品<font color='red'>安全</font>知识。</p><p>　　消费者协会和其他消费者组织对违反本法规定，损害消费者合法权益的行为，依法进行社会监督。</p></td>-->
+                        <!--</tr>-->
+                        <!--</table>-->
+                        <!--<hr>-->
+                        <!---->
+                        <!---->
+                        <!---->
+                    </div>
+
+                    <!--<div class="pagebar border">-->
+                    <!---->
+                    <!---->
+                    <!---->
+                    <!---->
+                    <!--<a href="" page="1" class="pageNum cur">1</a>-->
+                    <!---->
+                    <!--<a href="" page="2" class="pageNum ">2</a>-->
+                    <!---->
+                    <!--<a href="" page="3" class="pageNum ">3</a>-->
+                    <!---->
+                    <!--<a href="" page="4" class="pageNum ">4</a>-->
+                    <!---->
+                    <!--<a href="" page="5" class="pageNum ">5</a>-->
+                    <!---->
+                    <!--<a href="" page="6" class="pageNum ">6</a>-->
+                    <!---->
+                    <!--<a href="" page="7" class="pageNum ">7</a>-->
+                    <!---->
+                    <!--<a href="" page="8" class="pageNum ">8</a>-->
+                    <!---->
+                    <!--<a href="" page="9" class="pageNum ">9</a>-->
+                    <!---->
+                    <!--<a href="" page="10" class="pageNum ">10</a>-->
+                    <!---->
+                    <!---->
+                    <!---->
+                    <!--<a href="" page="2">下一页</a>-->
+                    <!---->
+                    <!--第<input type="text" id="index" value="1"/>/<span id="pagecount">16</span>页-->
+                    <!--<a href="">跳转</a>-->
+                </div>
+                <!--<script type="text/javascript" id="pagebarscript">-->
+                <!--$("div.pagebar a[page]").each(function(){-->
+                <!--if(location.search.indexOf("PageIndex=")==-1){-->
+                <!--this.href=location.search+"&PageIndex="+$(this).attr("page");-->
+                <!--}else{-->
+                <!--this.href=location.search.replace(/PageIndex=[0-9]*/,"PageIndex="+$(this).attr("page"));-->
+                <!--}-->
+                <!--$(this).removeAttr("page");-->
+                <!--});-->
+                <!--$("div.pagebar a:last")[0].href="javascript:location.href='"+-->
+                <!--location.search.replace(/&?PageIndex=[0-9]*/,"")+"&PageIndex='+document.getElementById('index').value;"-->
+                <!--$("#pagebarscript").remove();-->
+                <!--</script>-->
+
+            </div>
+        </div>
+    </div>
+</div>
+<!--** 主体结束 **-->
+
+<!--** 尾部开始 **-->
+
+<div class="w_mb">
+    中交安科（南京安全咨询有限公司）
+</div>
+<!--** 尾部结束 **-->
+<script type="text/javascript" th:src="@{/jquery.select.js}"></script>
+<script type="text/javascript">
+    function fontResizer(smallFont, medFont, largeFont) {
+        function saveState(curSize) {
+            var date = new Date();
+            date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toGMTString();
+            document.cookie = "fontSizer" + "=" + curSize + expires + "; path=/";
+        }
+
+        $(".smallFont").click(function () {
+            $('.con').css('font-size', smallFont);
+            $(".smallFont").addClass("curFont");
+            saveState(smallFont);
+        });
+
+        $(".medFont").click(function () {
+            $('.con').css('font-size', medFont);
+            $(".medFont").addClass("curFont");
+            saveState(medFont);
+        });
+
+        $(".largeFont").click(function () {
+            $('.con').css('font-size', largeFont);
+            $(".largeFont").addClass("curFont");
+            saveState(largeFont);
+        });
+
+        function getCookie(c_name) {
+            if (document.cookie.length > 0) {
+                c_start = document.cookie.indexOf(c_name + "=");
+                if (c_start != -1) {
+                    c_start = c_start + c_name.length + 1;
+                    c_end = document.cookie.indexOf(";", c_start);
+                    if (c_end == -1) c_end = document.cookie.length;
+                    return unescape(document.cookie.substring(c_start, c_end));
+                }
+            }
+            return "";
+        }
+
+        var savedSize = getCookie('fontSizer');
+
+        if (savedSize != "") {
+            $('.con').css('font-size', savedSize);
+        } else {
+            $('.con').css('font-size', medFont);
+        }
+
+    }
+
+    $(document).ready(function () {
+        fontResizer('12px', '14px', '16px');
+    });
+</script>
+
+<script th:src="@{/stat.js}" type="text/javascript"></script>
+<script>
+    if (window._zcms_stat) _zcms_stat("SiteID=124&Dest=/stat/dealer");
+</script>
+
+<!-- App=ChinaLawDB(法律法规数据库) 2.4.26182,CostTime=17,PublishDate=2020-02-23 21:23:25 -->
+</body>
+</html>

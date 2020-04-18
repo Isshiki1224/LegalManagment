@@ -1,0 +1,25 @@
+
+spring:
+  elasticsearch:
+    jest:
+      uris: http://localhost:9200
+
+
+  thymeleaf:
+    cache: false
+
+  application:
+    name: nacos-provide
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 40.73.162.1:8848
+
+  mvc:
+    date-format: yyyy-MM-dd
+
+server:
+  tomcat:
+    uri-encoding: UTF-8
+  port: 8081
