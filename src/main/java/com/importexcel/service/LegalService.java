@@ -15,101 +15,109 @@ import java.util.List;
 public interface LegalService {
 
     /**
-     * 新增法律法规(不需要新建索引）
-     * @param file
+     * 新增法律法规
      * @param legal
-     * @return
-     * @throws Exception
+     * @return boolean
      */
-    boolean addLegal1(Legal legal) throws Exception;
+    boolean addLegal1(Legal legal);
 
     /**
      * 删除法律法规
      * @param id
-     * @return
-     * @throws Exception
+     * @return boolean
      */
-    boolean deleteLegal(String id) throws Exception;
-
+    boolean deleteLegal(String id);
 
     /**
      * 更新
      * @param file
      * @param legal
      * @param wb
-     * @return
-     * @throws Exception
+     * @return boolean
      */
-    boolean updateLegal(MultipartFile file, Legal legal, Workbook wb)throws Exception;
-
-
+    boolean updateLegal(MultipartFile file, Legal legal, Workbook wb);
 
     /**
      * 查询所有的法律法规
-     * @return
-     * @throws Exception
+     * @return List<Legal>
      */
-    List<Legal> selectAll() throws Exception;
+    List<Legal> selectAll() ;
 
     /**
      * 用户查询
-     * @return
-     * @throws Exception
+     * @return List<Legal>
      */
-    List<Legal> selectNewLegal() throws Exception;
+    List<Legal> selectNewLegal();
 
     /**
-     * 分页查询
+     * 分页查询（旧版）
+     * @param pno
+     * @param psize
      * @return
      * @throws Exception
      */
-    List<Legal> selectByLimit(Integer pno,Integer psize) throws Exception;
+    List<Legal> selectByLimit(Integer pno,Integer psize);
 
     /**
      * 根据ID查询法律法规
      * @param id
-     * @return
-     * @throws Exception
+     * @return Legal
      */
-    Legal selectById(String id) throws Exception;
+    Legal selectById(String id);
+
+    /**
+     * 检查标题是否唯一
+     * @param title
+     * @return List<Legal>
+     */
+    List<Legal> selectByLegalTitle(String title);
+
+    /**
+     * 筛选法律法规
+     * @param filters
+     * @return
+     */
+    List<Legal> filterLegal(List<String> filters);
 
     /**
      * 根据搜索ID查询法律法规
      * @param id
-     * @return
-     * @throws Exception
+     * @return Legal
      */
-    Legal selectBySearchId(String id) throws Exception;
+    Legal selectBySearchId(String id) ;
 
 
     /**
      * 标题搜索
+     * @param kind
      * @param searchContent
-     * @param category
-     * @return
-     * @throws Exception
+     * @param pageNum
+     * @param pageSize
+     * @return JsonData（包装类）
      */
-    JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize) throws Exception;
+    JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize);
 
     /**
      * 查询总记录数
      * @return
      */
-    Integer selectTotalPage() throws Exception;
-    /**
-     * 正文搜索
-     * @param searchContent
-     * @return
-     * @throws Exception
-     */
-    JsonData selectByLaw(String kind,String searchContent,Integer pageNum,Integer pageSize) throws Exception;
+    Integer selectTotalPage();
 
     /**
-     * 精准搜索
-     * @param legal
-     * @return
-     * @throws Exception
+     * 正文搜索
+     * @param kind
+     * @param searchContent
+     * @param pageNum
+     * @param pageSize
+     * @return JsonData（包装类）
      */
-    List<Term> select(Term term) throws Exception;
+    JsonData selectByLaw(String kind,String searchContent,Integer pageNum,Integer pageSize);
+
+    /**
+     * 法律依据接口
+     * @param term
+     * @return List<Term>
+     */
+    List<Term> select(Term term) ;
 
 }

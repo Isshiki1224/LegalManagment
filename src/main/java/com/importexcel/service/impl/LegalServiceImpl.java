@@ -44,7 +44,7 @@ public class LegalServiceImpl implements LegalService {
     JestClient jestClient;
 
     @Override
-    public boolean addLegal1(Legal low) throws Exception {
+    public boolean addLegal1(Legal low) {
 
         Legal legal = getLegal(low);
 
@@ -68,10 +68,20 @@ public class LegalServiceImpl implements LegalService {
             String[] ids = low.getId().split(",");
             String id = ids[0];
             index = new Index.Builder(legal).index("legal").type("_doc").id(id).build();
-            jestClient.execute(index);
+            try {
+                jestClient.execute(index);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         } else {
             index = new Index.Builder(legal).index("legal").type("_doc").build();
-            jestClient.execute(index);
+            try {
+                jestClient.execute(index);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
         return true;
     }
@@ -168,46 +178,54 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public boolean deleteLegal(String id) throws Exception {
+    public boolean deleteLegal(String id) {
         System.out.println(id);
 //        String[] ids = id.split(",");
 //        String deleteId = ids[0];
         Delete delete = new Delete.Builder(id).index("legal").type("_doc").build();
-        jestClient.execute(delete);
+        try {
+            jestClient.execute(delete);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
     @Override
-    public boolean updateLegal(MultipartFile file, Legal low, Workbook wb) throws Exception {
+    public boolean updateLegal(MultipartFile file, Legal low, Workbook wb) {
         return false;
     }
 
 
     @Override
-    public List<Legal> selectAll() throws Exception {
+    public List<Legal> selectAll() {
         List<Legal> legals = new ArrayList<>();
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.size(1000);
         String dsl = builder.toString();
         Search search = new Search.Builder(dsl).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
-        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-        if (hits == null) {
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
+        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
         for (SearchResult.Hit<Legal, Void> hit : hits) {
             Legal source = hit.source;
             List<Term> terms = source.getTerms();
-            for (int i = 0;i < terms.size();i++){
-                if("".equals(terms.get(i).getItemId())){
+            for (int i = 0; i < terms.size(); i++) {
+                if ("".equals(terms.get(i).getItemId())) {
                     terms.get(i).setItemContent("");
-                }else {
+                } else {
                     String nowItemId = terms.get(i).getItemId();
                     int itemId = Integer.parseInt(nowItemId);
                     String preItemId = terms.get(i - 1).getItemId();
                     if (!(preItemId.equalsIgnoreCase(nowItemId))) {
                         terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
-                    }else{
+                    } else {
                         terms.get(i).setItemContent("");
                     }
                     System.out.println(terms.get(i).getItemContent());
@@ -220,19 +238,22 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public List<Legal> selectNewLegal() throws Exception {
+    public List<Legal> selectNewLegal() {
 
         List<Legal> legals = new ArrayList<>();
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.size(1000);
         String dsl = builder.toString();
         Search search = new Search.Builder(dsl).addIndex("newlegal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
         System.out.println(searchResult.isSucceeded());
         List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-        if (hits == null) {
-            throw new Exception("查询失败");
-        }
         for (SearchResult.Hit<Legal, Void> hit : hits) {
             Legal source = hit.source;
             source.setId(hit.id);
@@ -242,17 +263,23 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public List<Legal> selectByLimit(Integer pno, Integer psize) throws Exception {
+    public List<Legal> selectByLimit(Integer pno, Integer psize) {
         PageHelper.startPage(pno, psize);
         List<Legal> legals = new ArrayList<>();
         return null;
     }
 
     @Override
-    public Legal selectById(String id) throws Exception {
+    public Legal selectById(String id) {
         Get get = new Get.Builder("legal", id).type("_doc").build();
 
-        JestResult result = jestClient.execute(get);
+        JestResult result = null;
+        try {
+            result = jestClient.execute(get);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
         JsonObject jsonObject = result.getJsonObject().get("_source").getAsJsonObject();
 
         Gson gson = new Gson();
@@ -265,40 +292,119 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public Legal selectBySearchId(String id) throws Exception {
-        Get get = new Get.Builder("newlegal", id).type("_doc").build();
-
-        JestResult result = jestClient.execute(get);
-        JsonObject jsonObject = result.getJsonObject().get("_source").getAsJsonObject();
-
-        Gson gson = new Gson();
-        Legal legal = new Legal();
-        legal = gson.fromJson(jsonObject, legal.getClass());
-        legal.setId(id);
-        System.out.println(legal);
-
-        return legal;
-    }
-
-    @Override
-    public JsonData selectByTitle(String kind,String searchContent,Integer pageNum,Integer pageSize) throws Exception {
-        System.out.println("searchContent=" + searchContent);
-        System.out.println("kind=" + kind);
-        int fromInt = (pageNum-1)*pageSize;
+    public List<Legal> selectByLegalTitle(String title) {
         List<Legal> legals = new ArrayList<>();
         SearchSourceBuilder builder = new SearchSourceBuilder();
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        if(!("".equalsIgnoreCase(searchContent))){
-            if("全库".equals(kind)){
+
+        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("title", title);
+        boolQueryBuilder.must(matchQueryBuilder);
+
+        builder.query(boolQueryBuilder);
+        builder.size(1000);
+        String dslStr1 = builder.toString();
+        System.out.println(dslStr1);
+        Search search1 = new Search.Builder(dslStr1).addIndex("legal").addType("_doc").build();
+        SearchResult searchResult1 = null;
+        try {
+            searchResult1 = jestClient.execute(search1);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        List<SearchResult.Hit<Legal, Void>> hits1 = searchResult1.getHits(Legal.class);
+        if (hits1 == null) {
+            return null;
+        }
+        Legal legal;
+        for (SearchResult.Hit<Legal, Void> hit : hits1) {
+            legal = hit.source;
+            legals.add(legal);
+        }
+        return legals;
+    }
+
+    @Override
+    /**
+     * 未完成
+     */
+    public List<Legal> filterLegal(List<String> filters) {
+        List<Legal> legals = new ArrayList<>();
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        for(String str : filters){
+            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("specific", str);
+            boolQueryBuilder.must(matchQueryBuilder);
+            builder.query(boolQueryBuilder);
+            builder.size(1000);
+            String dslStr = builder.toString();
+            System.out.println(dslStr);
+            Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
+            SearchResult searchResult;
+            try {
+                searchResult = jestClient.execute(search);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
+            if (hits == null) {
+                return null;
+            }
+            Legal legal;
+            for (SearchResult.Hit<Legal, Void> hit : hits) {
+                legal = hit.source;
+                if (legals.contains(legal)){
+
+                }
+                legals.add(legal);
+            }
+        }
+        return legals;
+    }
+
+    @Override
+    public Legal selectBySearchId(String id) {
+        Get get = new Get.Builder("newlegal", id).type("_doc").build();
+
+        JestResult result = null;
+        try {
+            result = jestClient.execute(get);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        JsonObject jsonObject = result.getJsonObject().get("_source").getAsJsonObject();
+
+        Gson gson = new Gson();
+        Legal legal = new Legal();
+        legal = gson.fromJson(jsonObject, legal.getClass());
+        legal.setId(id);
+        System.out.println(legal);
+
+        return legal;
+    }
+
+    @Override
+    public JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize) {
+        System.out.println("searchContent=" + searchContent);
+        System.out.println("kind=" + kind);
+        JsonData data = new JsonData();
+        int fromInt = (pageNum - 1) * pageSize;
+        List<Legal> legals = new ArrayList<>();
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        if (!("".equalsIgnoreCase(searchContent))) {
+            if ("全库".equals(kind)) {
                 MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("title", searchContent);
                 boolQueryBuilder.must(matchQueryBuilder);
-            }else{
+            } else {
                 MatchQueryBuilder matchQueryBuilder1 = new MatchQueryBuilder("title", searchContent);
                 MatchQueryBuilder matchQueryBuilder2 = new MatchQueryBuilder("kind", kind);
                 boolQueryBuilder.must(matchQueryBuilder1).must(matchQueryBuilder2);
             }
-        }else{
-            if(!("全库".equals(kind))){
+        } else {
+            if (!("全库".equals(kind))) {
                 MatchQueryBuilder matchQueryBuilder2 = new MatchQueryBuilder("kind", kind);
                 boolQueryBuilder.must(matchQueryBuilder2);
             }
@@ -309,7 +415,15 @@ public class LegalServiceImpl implements LegalService {
         String dslStr1 = builder.toString();
         System.out.println(dslStr1);
         Search search1 = new Search.Builder(dslStr1).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult1 = jestClient.execute(search1);
+        SearchResult searchResult1 = null;
+        try {
+            searchResult1 = jestClient.execute(search1);
+        } catch (IOException e) {
+            e.printStackTrace();
+            data.setStatus(-1);
+            data.setMsg("标题查询失败");
+            return data;
+        }
         List<SearchResult.Hit<Legal, Void>> hits1 = searchResult1.getHits(Legal.class);
 
         builder.from(fromInt);
@@ -319,17 +433,22 @@ public class LegalServiceImpl implements LegalService {
         String dslStr = builder.toString();
         System.out.println(dslStr);
         Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
-        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-        if(hits == null){
-            return null;
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (IOException e) {
+            e.printStackTrace();
+            data.setStatus(-2);
+            data.setMsg("标题查询失败");
+            return data;
         }
+        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
+
         for (SearchResult.Hit<Legal, Void> hit : hits) {
             Legal source = hit.source;
             source.setId(hit.id);
             legals.add(source);
         }
-        JsonData data = new JsonData();
         System.out.println(hits1.size());
         data.setDate(legals);
         data.setTotalPage(hits1.size());
@@ -337,13 +456,19 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public Integer selectTotalPage() throws Exception{
+    public Integer selectTotalPage() {
         Integer totalPage = 0;
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.size(1000);
         String dsl = builder.toString();
         Search search = new Search.Builder(dsl).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        }
         List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
         totalPage = hits.size();
         return totalPage;
@@ -351,22 +476,23 @@ public class LegalServiceImpl implements LegalService {
 
 
     @Override
-    public JsonData selectByLaw(String kind, String searchContent, Integer pageNum, Integer pageSize) throws Exception {
-        int fromInt = (pageNum-1)*pageSize;
+    public JsonData selectByLaw(String kind, String searchContent, Integer pageNum, Integer pageSize) {
+        JsonData data = new JsonData();
+        int fromInt = (pageNum - 1) * pageSize;
         List<Legal> legals = new ArrayList<>();
         SearchSourceBuilder builder = new SearchSourceBuilder();
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        if(!("".equalsIgnoreCase(searchContent))){
-            if("全库".equals(kind)){
+        if (!("".equalsIgnoreCase(searchContent))) {
+            if ("全库".equals(kind)) {
                 MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("terms.content", searchContent);
                 boolQueryBuilder.must(matchQueryBuilder);
-            }else{
+            } else {
                 MatchQueryBuilder matchQueryBuilder1 = new MatchQueryBuilder("terms.content", searchContent);
                 MatchQueryBuilder matchQueryBuilder2 = new MatchQueryBuilder("kind", kind);
                 boolQueryBuilder.must(matchQueryBuilder1).must(matchQueryBuilder2);
             }
-        }else{
-            if(!("全库".equals(kind))){
+        } else {
+            if (!("全库".equals(kind))) {
                 MatchQueryBuilder matchQueryBuilder2 = new MatchQueryBuilder("kind", kind);
                 boolQueryBuilder.must(matchQueryBuilder2);
             }
@@ -377,7 +503,15 @@ public class LegalServiceImpl implements LegalService {
         String dslStr1 = builder.toString();
         System.out.println(dslStr1);
         Search search1 = new Search.Builder(dslStr1).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult1 = jestClient.execute(search1);
+        SearchResult searchResult1 = null;
+        try {
+            searchResult1 = jestClient.execute(search1);
+        } catch (IOException e) {
+            e.printStackTrace();
+            data.setStatus(-1);
+            data.setMsg("正文查询失败");
+            return data;
+        }
         List<SearchResult.Hit<Legal, Void>> hits1 = searchResult1.getHits(Legal.class);
 
         builder.from(fromInt);
@@ -386,17 +520,22 @@ public class LegalServiceImpl implements LegalService {
 
         String dslStr = builder.toString();
         Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
-        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-        if(hits == null){
-            return null;
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (IOException e) {
+            e.printStackTrace();
+            data.setStatus(-1);
+            data.setMsg("正文查询失败");
+            return data;
         }
+        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
         for (SearchResult.Hit<Legal, Void> hit : hits) {
             Legal source = hit.source;
             source.setId(hit.id);
             legals.add(source);
         }
-        JsonData data = new JsonData();
+
         System.out.println(hits1.size());
         data.setDate(legals);
         data.setTotalPage(hits1.size());
@@ -404,11 +543,17 @@ public class LegalServiceImpl implements LegalService {
     }
 
     @Override
-    public List<Term> select(Term term) throws Exception {
-        boolean indexExists = jestClient.execute(new IndicesExists.Builder("term").build()).isSucceeded();
-        if (indexExists) {
-            //删除操作可添加索引类型 .type(indexType)
-            jestClient.execute(new DeleteIndex.Builder("term").build());
+    public List<Term> select(Term term) {
+        boolean indexExists = false;
+        try {
+            indexExists = jestClient.execute(new IndicesExists.Builder("term").build()).isSucceeded();
+            if (indexExists) {
+                //删除操作可添加索引类型 .type(indexType)
+                jestClient.execute(new DeleteIndex.Builder("term").build());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
         SearchSourceBuilder builder = new SearchSourceBuilder();
         SearchSourceBuilder builder2 = new SearchSourceBuilder();
@@ -442,7 +587,13 @@ public class LegalServiceImpl implements LegalService {
 
         String dslStr = builder.toString();
         Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
-        SearchResult searchResult = jestClient.execute(search);
+        SearchResult searchResult = null;
+        try {
+            searchResult = jestClient.execute(search);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
         List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
 
         for (SearchResult.Hit<Legal, Void> hit : hits) {
@@ -450,7 +601,12 @@ public class LegalServiceImpl implements LegalService {
             List<Term> terms = source.getTerms();
             for (Term term1 : terms) {
                 Index index = new Index.Builder(term1).index("term").type("_doc").build();
-                jestClient.execute(index);
+                try {
+                    jestClient.execute(index);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
         }
         boolQueryBuilder2.should(matchQueryBuilder2).should(matchQueryBuilder3).must(matchQueryBuilder4);
@@ -458,7 +614,13 @@ public class LegalServiceImpl implements LegalService {
         String dslStr2 = builder2.toString();
         System.out.println(dslStr2);
         Search search2 = new Search.Builder(dslStr2).addIndex("term").addType("_doc").build();
-        SearchResult searchResult2 = jestClient.execute(search2);
+        SearchResult searchResult2 = null;
+        try {
+            searchResult2 = jestClient.execute(search2);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
         List<SearchResult.Hit<Term, Void>> hitList = searchResult2.getHits(Term.class);
 
         List<Term> terms = new ArrayList<>();

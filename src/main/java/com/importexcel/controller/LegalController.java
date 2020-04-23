@@ -34,17 +34,24 @@ public class LegalController {
     private JsonData data;
 
     @RequestMapping("/legal")
-    public String toLegal() throws Exception {
+    public String toLegal() {
         return "emp/list";
     }
 
     @RequestMapping("/selectAll")
     @ResponseBody
     @CrossOrigin
-    public List<Legal> selectAll() throws Exception {
+    public JsonData selectAll() {
         data = new JsonData();
         List<Legal> legals = legalService.selectAll();
-        return legals;
+        if (legals == null) {
+            data.setMsg("查询列表失败");
+            data.setStatus(-1);
+            return data;
+        }
+        data.setMsg("查询列表成功");
+        data.setStatus(0);
+        return data;
     }
 
     @RequestMapping("/legalPage")
@@ -53,7 +60,7 @@ public class LegalController {
     }
 
     @RequestMapping("/updatePage")
-    public String toUpdateLegalPage(String id, Model model) throws Exception {
+    public String toUpdateLegalPage(String id, Model model) {
         System.out.println(id);
 
         Legal legal = legalService.selectById(id);
@@ -65,8 +72,26 @@ public class LegalController {
         return "emp/list";
     }
 
+    @RequestMapping("/getLegal")
+    @ResponseBody
+    @CrossOrigin
+    public JsonData getLegal(String id) {
+        System.out.println("id=" + id);
+        data = new JsonData();
+        Legal legal = legalService.selectById(id);
+        if (legal == null) {
+            data.setStatus(-1);
+            data.setMsg("未找到对应的法律法规");
+            return data;
+        }
+        data.setMsg("操作成功");
+        data.setStatus(0);
+        data.setDate(legal);
+        return data;
+    }
+
     @RequestMapping("/detailPage")
-    public String toDetailPage(String id, Model model) throws Exception {
+    public String toDetailPage(String id, Model model) {
 
         Legal legal = legalService.selectById(id);
         if (legal != null) {
@@ -78,7 +103,7 @@ public class LegalController {
     }
 
     @RequestMapping("/searchDetailPage")
-    public String searchDetailPage(String id, Model model) throws Exception {
+    public String searchDetailPage(String id, Model model) {
 
         Legal legal = legalService.selectBySearchId(id);
         if (legal != null) {
@@ -89,10 +114,48 @@ public class LegalController {
         return "emp/list";
     }
 
+    @RequestMapping("/checkTitle")
+    @ResponseBody
+    @CrossOrigin
+    public JsonData checkTitle(String title) {
+        data = new JsonData();
+        if ("".equals(title)) {
+            data.setStatus(-1);
+            data.setMsg("标题不能为空");
+            return data;
+        }
+        List<Legal> legals = legalService.selectByLegalTitle(title);
+        if (legals == null) {
+            data.setStatus(0);
+            data.setMsg("未被录入");
+            return data;
+        }
+        List<String> titles = new ArrayList<>();
+        for(Legal legal: legals){
+            titles.add(legal.getTitle());
+        }
+        data.setDate(titles);
+        data.setStatus(-2);
+        data.setMsg("前端继续分析是否重复");
+        return data;
+
+    }
+
+    @RequestMapping("/screen")
+    @ResponseBody
+    @CrossOrigin
+    public JsonData screen(@RequestBody List<String> filters) {
+        System.out.println(filters);
+        data = new JsonData();
+        legalService.filterLegal(filters);
+        return data;
+    }
+
+
     @RequestMapping("/upload")
     @ResponseBody
     @CrossOrigin
-    public JsonData uploadExcel(@RequestParam("file") MultipartFile file){
+    public JsonData uploadExcel(@RequestParam("file") MultipartFile file) {
         data = new JsonData();
 
         if (file.isEmpty()) {
@@ -135,7 +198,7 @@ public class LegalController {
             file.transferTo(file1);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
@@ -153,7 +216,7 @@ public class LegalController {
     @RequestMapping("/addLegal")
     @ResponseBody
     @CrossOrigin()
-    public JsonData addLegal(@RequestBody Legal legal) throws Exception {
+    public JsonData addLegal(@RequestBody Legal legal) {
         data = new JsonData();
         System.out.println(legal);
         boolean flag;
@@ -161,10 +224,10 @@ public class LegalController {
 
         if (flag) {
             data.setStatus(0);
-            data.setMsg("操作成功");
+            data.setMsg("新增成功");
         } else {
             data.setStatus(-2);
-            data.setMsg("操作失败");
+            data.setMsg("新增失败");
         }
         System.out.println(data);
         return data;
@@ -172,6 +235,7 @@ public class LegalController {
 
     @RequestMapping("/detail")
     @ResponseBody
+    @CrossOrigin
     public JsonData toDetail(String id) {
         data = new JsonData();
 
@@ -183,7 +247,8 @@ public class LegalController {
 
     @RequestMapping("/delete")
     @ResponseBody
-    public JsonData deleteLegal(String id) throws Exception {
+    @CrossOrigin
+    public JsonData deleteLegal(String id) {
 
         data = new JsonData();
 
@@ -191,28 +256,33 @@ public class LegalController {
 
         if (flag) {
             data.setStatus(0);
-            data.setMsg("操作成功");
+            data.setMsg("删除成功");
         } else {
             data.setStatus(-1);
-            data.setMsg("操作失败");
+            data.setMsg("删除失败");
         }
         return data;
     }
 
     @RequestMapping("/download")
-    public JsonData download(String filePath, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public JsonData download(String filePath, HttpServletRequest request, HttpServletResponse response) {
         data = new JsonData();
         System.out.println(filePath);
 
         String path = "D:/filepath";
 
-        InputStream inputStream = new FileInputStream(new File(path, filePath));
-        OutputStream outputStream = response.getOutputStream();
-
-        response.setContentType("application/x-download");
-        response.addHeader("Content-Disposition", "attachment;filename=" + filePath);
-
-        int copy = IOUtils.copy(inputStream, outputStream);
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        int copy = 0;
+        try {
+            inputStream = new FileInputStream(new File(path, filePath));
+            outputStream = response.getOutputStream();
+            response.setContentType("application/x-download");
+            response.addHeader("Content-Disposition", "attachment;filename=" + filePath);
+            copy = IOUtils.copy(inputStream, outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (copy != 0) {
             data.setStatus(0);
             data.setMsg("导出成功");
@@ -226,12 +296,11 @@ public class LegalController {
     @RequestMapping("/SearchLawTitle")
     @ResponseBody
     @CrossOrigin
-    public JsonData searchTitle(String kind,String searchContent,Integer pageNum,Integer pageSize) throws Exception{
+    public JsonData searchTitle(String kind, String searchContent, Integer pageNum, Integer pageSize) {
         data = new JsonData();
-        data  = legalService.selectByTitle(kind,searchContent,pageNum,pageSize);
-        if(data.getDate()==null){
-            data.setMsg("操作失败");
-            data.setStatus(-1);
+        data = legalService.selectByTitle(kind, searchContent, pageNum, pageSize);
+        if (data.getStatus() != 0) {
+            return data;
         }
         data.setMsg("操作成功");
         data.setPageNum(pageNum);
@@ -242,12 +311,11 @@ public class LegalController {
     @RequestMapping("/SearchLaw")
     @ResponseBody
     @CrossOrigin
-    public JsonData searchLaw(String kind,String searchContent,Integer pageNum,Integer pageSize) throws Exception{
+    public JsonData searchLaw(String kind, String searchContent, Integer pageNum, Integer pageSize) {
         data = new JsonData();
-        data  = legalService.selectByLaw(kind,searchContent,pageNum,pageSize);
-        if(data.getDate() == null){
-            data.setMsg("操作失败");
-            data.setStatus(-1);
+        data = legalService.selectByLaw(kind, searchContent, pageNum, pageSize);
+        if (data.getStatus() != 0) {
+            return data;
         }
         data.setMsg("操作成功");
         data.setPageNum(pageNum);
@@ -258,13 +326,14 @@ public class LegalController {
     @RequestMapping("/SearchAllLegal")
     @ResponseBody
     @CrossOrigin
-    public JsonData searchAllLegal() throws Exception{
+    public JsonData searchAllLegal() {
         data = new JsonData();
         List<Legal> legals = new ArrayList<>();
-        legals  = legalService.selectAll();
-        if(legals == null){
+        legals = legalService.selectAll();
+        if (legals == null) {
             data.setMsg("操作失败");
             data.setStatus(-1);
+            return data;
         }
         data.setMsg("操作成功");
         data.setDate(legals);
@@ -275,10 +344,10 @@ public class LegalController {
     @RequestMapping("/search")
     public String search(@RequestParam(value = "pno", defaultValue = "1", required = true) Integer pno,
                          @RequestParam(value = "psize", defaultValue = "5", required = true) Integer psize
-            ,Model model) throws Exception{
+            , Model model) {
         System.out.println(psize);
-        PageHelper.startPage(pno,psize);
-        List<Legal> legals  = legalService.selectAll();
+        PageHelper.startPage(pno, psize);
+        List<Legal> legals = legalService.selectAll();
         PageInfo<Legal> ls = new PageInfo<>(legals);
 
         System.out.println(ls);
@@ -289,7 +358,7 @@ public class LegalController {
     @RequestMapping("/searches")
     @ResponseBody
     @CrossOrigin
-    public List<Term> searches(String title,String itemId) throws Exception{
+    public JsonData searches(String title, String itemId) {
         System.out.println(itemId);
         Term term = new Term();
 //        double item = Double.parseDouble(itemId);
@@ -298,7 +367,15 @@ public class LegalController {
         term.setItemId(itemId);
         data = new JsonData();
         List<Term> terms = legalService.select(term);
-        return terms;
+        if (terms == null) {
+            data.setMsg("搜索失败");
+            data.setStatus(-1);
+            return data;
+        }
+        data.setMsg("搜索成功");
+        data.setStatus(0);
+        data.setDate(terms);
+        return data;
     }
 
 }
