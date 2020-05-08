@@ -3,6 +3,7 @@ package com.importexcel.controller;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.importexcel.bean.Legal;
+import com.importexcel.bean.QueryInfo;
 import com.importexcel.bean.Term;
 import com.importexcel.service.LegalService;
 import com.importexcel.util.JsonData;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -218,6 +220,7 @@ public class LegalController {
     @CrossOrigin()
     public JsonData addLegal(@RequestBody Legal legal) {
         data = new JsonData();
+        legal.setModifyDate(new Date());
         System.out.println(legal);
         boolean flag;
         flag = legalService.addLegal1(legal);
@@ -296,29 +299,46 @@ public class LegalController {
     @RequestMapping("/SearchLawTitle")
     @ResponseBody
     @CrossOrigin
-    public JsonData searchTitle(String kind, String searchContent, Integer pageNum, Integer pageSize) {
+    public JsonData searchTitle(@RequestBody QueryInfo queryInfo) {
+
         data = new JsonData();
-        data = legalService.selectByTitle(kind, searchContent, pageNum, pageSize);
+        data = legalService.selectByTitle(queryInfo);
         if (data.getStatus() != 0) {
             return data;
         }
         data.setMsg("操作成功");
-        data.setPageNum(pageNum);
+        data.setPageNum(queryInfo.getPageNum());
         data.setStatus(0);
         return data;
     }
 
+//    @RequestMapping("/SearchLawTitle")
+//    @ResponseBody
+//    @CrossOrigin
+//    public JsonData searchTitle(String kind, String searchContent, Integer pageNum, Integer pageSize,@RequestBody String[] specific) {
+//        data = new JsonData();
+//        data = legalService.selectByTitle(kind, searchContent, pageNum, pageSize,specific);
+//        if (data.getStatus() != 0) {
+//            return data;
+//        }
+//        data.setMsg("操作成功");
+//        data.setPageNum(pageNum);
+//        data.setStatus(0);
+//        return data;
+//    }
+
+
     @RequestMapping("/SearchLaw")
     @ResponseBody
     @CrossOrigin
-    public JsonData searchLaw(String kind, String searchContent, Integer pageNum, Integer pageSize) {
+    public JsonData searchLaw(@RequestBody QueryInfo queryInfo) {
         data = new JsonData();
-        data = legalService.selectByLaw(kind, searchContent, pageNum, pageSize);
+        data = legalService.selectByLaw(queryInfo);
         if (data.getStatus() != 0) {
             return data;
         }
         data.setMsg("操作成功");
-        data.setPageNum(pageNum);
+        data.setPageNum(queryInfo.getPageNum());
         data.setStatus(0);
         return data;
     }
@@ -359,6 +379,7 @@ public class LegalController {
     @ResponseBody
     @CrossOrigin
     public JsonData searches(String title, String itemId) {
+        System.out.println(title);
         System.out.println(itemId);
         Term term = new Term();
 //        double item = Double.parseDouble(itemId);

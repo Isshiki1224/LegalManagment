@@ -43,4 +43,9 @@ public class Legal {
      * 简介
      */
     private String synopsis;
+    @JsonFormat(
+            pattern = "yyyy-MM-dd",
+            timezone = "GMT+8"
+    )
+    private Date modifyDate;
 }

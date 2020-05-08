@@ -58,8 +58,10 @@ public class NumberFormatUtil {
             }
         }
         // 去掉尾数为零的
-        while (sb.charAt(sb.length() - 1) == '零') {
-            sb.replace(sb.length() - 1, sb.length(), "");
+        if(sb.length()>0){
+            while (sb.charAt(sb.length() - 1) == '零') {
+                sb.replace(sb.length() - 1, sb.length(), "");
+            }
         }
         return sb.toString();
     }

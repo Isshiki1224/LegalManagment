@@ -1,6 +1,7 @@
 package com.importexcel.service;
 
 import com.importexcel.bean.Legal;
+import com.importexcel.bean.QueryInfo;
 import com.importexcel.bean.Safety;
 import com.importexcel.bean.Term;
 import com.importexcel.util.JsonData;
@@ -89,13 +90,24 @@ public interface LegalService {
 
     /**
      * 标题搜索
-     * @param kind
-     * @param searchContent
-     * @param pageNum
-     * @param pageSize
-     * @return JsonData（包装类）
+     * @param queryInfo
+     * @return
      */
-    JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize);
+    JsonData selectByTitle(QueryInfo queryInfo);
+
+
+//    /**
+//     * 标题搜索
+//     * @param kind
+//     * @param searchContent
+//     * @param pageNum
+//     * @param pageSize
+//     * @param specific
+//     * @return
+//     */
+//    JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize,List<String> specific);
+
+
 
     /**
      * 查询总记录数
@@ -105,13 +117,10 @@ public interface LegalService {
 
     /**
      * 正文搜索
-     * @param kind
-     * @param searchContent
-     * @param pageNum
-     * @param pageSize
-     * @return JsonData（包装类）
+     * @param queryInfo
+     * @return
      */
-    JsonData selectByLaw(String kind,String searchContent,Integer pageNum,Integer pageSize);
+    JsonData selectByLaw(QueryInfo queryInfo);
 
     /**
      * 法律依据接口
