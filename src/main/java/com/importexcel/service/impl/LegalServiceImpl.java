@@ -6,23 +6,17 @@ import com.google.gson.JsonObject;
 import com.importexcel.bean.*;
 import com.importexcel.service.LegalService;
 import com.importexcel.util.JsonData;
-import com.importexcel.util.MathUtil;
 import com.importexcel.util.NumberFormatUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.*;
-import io.searchbox.indices.DeleteIndex;
-import io.searchbox.indices.IndicesExists;
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
@@ -30,13 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.*;
+import java.text.Collator;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
- * @author hhhxx
+ * @author ldk
  */
 @Service
 public class LegalServiceImpl implements LegalService {
@@ -186,8 +179,6 @@ public class LegalServiceImpl implements LegalService {
     @Override
     public boolean deleteLegal(String id) {
         System.out.println(id);
-//        String[] ids = id.split(",");
-//        String deleteId = ids[0];
         Delete delete = new Delete.Builder(id).index("legal").type("_doc").build();
         try {
             jestClient.execute(delete);
@@ -197,12 +188,6 @@ public class LegalServiceImpl implements LegalService {
         }
         return true;
     }
-
-    @Override
-    public boolean updateLegal(MultipartFile file, Legal low, Workbook wb) {
-        return false;
-    }
-
 
     @Override
     public List<Legal> selectAll() {
@@ -227,20 +212,22 @@ public class LegalServiceImpl implements LegalService {
                     if ("".equals(terms.get(i).getItemId())) {
                         terms.get(i).setItemContent("");
                     } else {
-                        String nowItemId = terms.get(i).getItemId();
-                        int itemId = Integer.parseInt(nowItemId);
-                        System.out.println("itemId=" + itemId);
-                        if (i == 0) {
-                            terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
-                            continue;
+                        if (!"0".equalsIgnoreCase(terms.get(i).getItemId())) {
+                            String nowItemId = terms.get(i).getItemId();
+                            int itemId = Integer.parseInt(nowItemId);
+                            System.out.println("itemId=" + itemId);
+                            if (i == 0) {
+                                terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
+                                continue;
+                            }
+                            String preItemId = terms.get(i - 1).getItemId();
+                            if (!(preItemId.equalsIgnoreCase(nowItemId))) {
+                                terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
+                            } else {
+                                terms.get(i).setItemContent("");
+                            }
+                            System.out.println(terms.get(i).getItemContent());
                         }
-                        String preItemId = terms.get(i - 1).getItemId();
-                        if (!(preItemId.equalsIgnoreCase(nowItemId))) {
-                            terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
-                        } else {
-                            terms.get(i).setItemContent("");
-                        }
-                        System.out.println(terms.get(i).getItemContent());
 
                     }
                 }
@@ -249,38 +236,6 @@ public class LegalServiceImpl implements LegalService {
             legals.add(source);
         }
         return legals;
-    }
-
-    @Override
-    public List<Legal> selectNewLegal() {
-
-        List<Legal> legals = new ArrayList<>();
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder.size(1000);
-        String dsl = builder.toString();
-        Search search = new Search.Builder(dsl).addIndex("newlegal").addType("_doc").build();
-        SearchResult searchResult = null;
-        try {
-            searchResult = jestClient.execute(search);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        System.out.println(searchResult.isSucceeded());
-        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-        for (SearchResult.Hit<Legal, Void> hit : hits) {
-            Legal source = hit.source;
-            source.setId(hit.id);
-            legals.add(source);
-        }
-        return legals;
-    }
-
-    @Override
-    public List<Legal> selectByLimit(Integer pno, Integer psize) {
-        PageHelper.startPage(pno, psize);
-        List<Legal> legals = new ArrayList<>();
-        return null;
     }
 
     @Override
@@ -308,27 +263,27 @@ public class LegalServiceImpl implements LegalService {
                 if ("".equals(terms.get(i).getItemId())) {
                     terms.get(i).setItemContent("");
                 } else {
-                    String nowItemId = terms.get(i).getItemId();
-                    int itemId = Integer.parseInt(nowItemId);
-                    System.out.println("itemId=" + itemId);
-                    if (i == 0) {
-                        terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
-                        continue;
+                    if (!"0".equalsIgnoreCase(terms.get(i).getItemId())) {
+                        String nowItemId = terms.get(i).getItemId();
+                        int itemId = Integer.parseInt(nowItemId);
+                        System.out.println("itemId=" + itemId);
+                        if (i == 0) {
+                            terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
+                            continue;
+                        }
+                        String preItemId = terms.get(i - 1).getItemId();
+                        if (!(preItemId.equalsIgnoreCase(nowItemId))) {
+                            terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
+                        } else {
+                            terms.get(i).setItemContent("");
+                        }
+                        System.out.println(terms.get(i).getItemContent());
                     }
-                    String preItemId = terms.get(i - 1).getItemId();
-                    if (!(preItemId.equalsIgnoreCase(nowItemId))) {
-                        terms.get(i).setItemContent("第" + NumberFormatUtil.numberFormat(itemId) + "条");
-                    } else {
-                        terms.get(i).setItemContent("");
-                    }
-                    System.out.println(terms.get(i).getItemContent());
-
                 }
-            }else{
+            } else {
                 terms.get(i).setItemContent(terms.get(i).getItemId());
             }
         }
-
         return legal;
     }
 
@@ -365,44 +320,6 @@ public class LegalServiceImpl implements LegalService {
         return legals;
     }
 
-    @Override
-    /**
-     * 未完成
-     */
-    public List<Legal> filterLegal(List<String> filters) {
-        List<Legal> legals = new ArrayList<>();
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        for (String str : filters) {
-            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("specific", str);
-            boolQueryBuilder.must(matchQueryBuilder);
-            builder.query(boolQueryBuilder);
-            builder.size(1000);
-            String dslStr = builder.toString();
-            System.out.println(dslStr);
-            Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
-            SearchResult searchResult;
-            try {
-                searchResult = jestClient.execute(search);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-            List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-            if (hits == null) {
-                return null;
-            }
-            Legal legal;
-            for (SearchResult.Hit<Legal, Void> hit : hits) {
-                legal = hit.source;
-                if (legals.contains(legal)) {
-
-                }
-                legals.add(legal);
-            }
-        }
-        return legals;
-    }
 
     @Override
     public Legal selectBySearchId(String id) {
@@ -447,9 +364,8 @@ public class LegalServiceImpl implements LegalService {
 
     @Override
     public JsonData selectByTitle(QueryInfo queryInfo) {
-        JsonData data = new JsonData();
+        JsonData data;
         int fromInt = (queryInfo.getPageNum() - 1) * queryInfo.getPageSize();
-        List<Legal> legals = new ArrayList<>();
         SearchSourceBuilder builder = new SearchSourceBuilder();
         BoolQueryBuilder boolQueryBuilder1 = new BoolQueryBuilder();
         BoolQueryBuilder boolQueryBuilder2 = new BoolQueryBuilder();
@@ -475,27 +391,33 @@ public class LegalServiceImpl implements LegalService {
                 boolQueryBuilder3.must(matchQueryBuilder2);
             }
         }
+        data = screen(queryInfo, fromInt, boolQueryBuilder1, boolQueryBuilder2, boolQueryBuilder3, builder);
+        return data;
+    }
 
+    /**
+     * 根据legals截取分页所需的集合
+     * @param queryInfo
+     * @param fromInt
+     * @param boolQueryBuilder1
+     * @param boolQueryBuilder2
+     * @param boolQueryBuilder3
+     * @param builder
+     * @return
+     */
+    public JsonData screen(QueryInfo queryInfo, Integer fromInt, BoolQueryBuilder boolQueryBuilder1, BoolQueryBuilder boolQueryBuilder2, BoolQueryBuilder boolQueryBuilder3, SearchSourceBuilder builder) {
+        JsonData data = new JsonData();
+        List<Legal> legals;
         boolean flag1 = "".equals(queryInfo.getSynthesize()) || "空".equals(queryInfo.getSynthesize());
         boolean flag2 = "".equals(queryInfo.getWaterway()) || "空".equals(queryInfo.getWaterway());
         boolean flag3 = "".equals(queryInfo.getRoad()) || "空".equals(queryInfo.getRoad());
         if (flag1 && flag2 && flag3) {
             List<SearchResult.Hit<Legal, Void>> total = getTotal(builder, boolQueryBuilder1);
-            List<SearchResult.Hit<Legal, Void>> hits;
-            if ((fromInt + queryInfo.getPageSize()) < total.size()) {
-                hits = total.subList(fromInt, (fromInt + queryInfo.getPageSize()));
-            } else {
-                hits = total.subList(fromInt, total.size());
-            }
-            for (SearchResult.Hit<Legal, Void> hit : hits) {
-                Legal source = hit.source;
-                source.setId(hit.id);
-                legals.add(source);
-            }
+            legals = getLegals(total, fromInt, queryInfo);
             data.setTotalPage(total.size());
         } else {
             List<SearchResult.Hit<Legal, Void>> total = new ArrayList<>();
-            List<SearchResult.Hit<Legal, Void>> hits;
+
             MatchQueryBuilder matchQueryBuilder;
             if (!(flag1)) {
                 matchQueryBuilder = new MatchQueryBuilder("specific", queryInfo.getSynthesize());
@@ -516,20 +438,36 @@ public class LegalServiceImpl implements LegalService {
                 total.addAll(hitList3);
             }
             System.out.println("size=" + total.size());
-            if ((fromInt + queryInfo.getPageSize()) < total.size()) {
-                hits = total.subList(fromInt, (fromInt + queryInfo.getPageSize()));
-            } else {
-                hits = total.subList(fromInt, total.size());
-            }
-            for (SearchResult.Hit<Legal, Void> hit : hits) {
-                Legal source = hit.source;
-                source.setId(hit.id);
-                legals.add(source);
-            }
+            legals = getLegals(total, fromInt, queryInfo);
             data.setTotalPage(total.size());
         }
         data.setDate(legals);
         return data;
+    }
+
+    /**
+     * 获取拼音排序后的集合
+     *
+     * @param total
+     * @param fromInt
+     * @param queryInfo
+     * @return
+     */
+    public List<Legal> getLegals(List<SearchResult.Hit<Legal, Void>> total, Integer fromInt, QueryInfo queryInfo) {
+        List<Legal> legals = new ArrayList<>();
+        for (SearchResult.Hit<Legal, Void> hit : total) {
+            Legal source = hit.source;
+            source.setId(hit.id);
+            legals.add(source);
+        }
+        legals.sort((Legal o1, Legal o2) -> Collator.getInstance(Locale.CHINESE).compare(o1.getTitle(), o2.getTitle()));
+        legals.forEach((Legal t) -> System.out.println(t.getTitle()));
+        if ((fromInt + queryInfo.getPageSize()) < legals.size()) {
+            legals = legals.subList(fromInt, (fromInt + queryInfo.getPageSize()));
+        } else {
+            legals = legals.subList(fromInt, total.size());
+        }
+        return legals;
     }
 
     @Override
@@ -587,59 +525,7 @@ public class LegalServiceImpl implements LegalService {
             }
         }
 
-        boolean flag1 = "".equals(queryInfo.getSynthesize()) || "空".equals(queryInfo.getSynthesize());
-        boolean flag2 = "".equals(queryInfo.getWaterway()) || "空".equals(queryInfo.getWaterway());
-        boolean flag3 = "".equals(queryInfo.getRoad()) || "空".equals(queryInfo.getRoad());
-        if (flag1 && flag2 && flag3) {
-            List<SearchResult.Hit<Legal, Void>> total = getTotal(builder, boolQueryBuilder1);
-            List<SearchResult.Hit<Legal, Void>> hits;
-            if ((fromInt + queryInfo.getPageSize()) < total.size()) {
-                hits = total.subList(fromInt, (fromInt + queryInfo.getPageSize()));
-            } else {
-                hits = total.subList(fromInt, total.size());
-            }
-            for (SearchResult.Hit<Legal, Void> hit : hits) {
-                Legal source = hit.source;
-                source.setId(hit.id);
-                legals.add(source);
-            }
-            data.setTotalPage(total.size());
-        } else {
-            List<SearchResult.Hit<Legal, Void>> total = new ArrayList<>();
-            List<SearchResult.Hit<Legal, Void>> hits;
-            MatchQueryBuilder matchQueryBuilder;
-            if (!(flag1)) {
-                matchQueryBuilder = new MatchQueryBuilder("specific", queryInfo.getSynthesize());
-                boolQueryBuilder1.must(matchQueryBuilder);
-                List<SearchResult.Hit<Legal, Void>> hitList1 = getTotal(builder, boolQueryBuilder1);
-                total.addAll(hitList1);
-            }
-            if (!(flag2)) {
-                matchQueryBuilder = new MatchQueryBuilder("specific", queryInfo.getWaterway());
-                boolQueryBuilder2.must(matchQueryBuilder);
-                List<SearchResult.Hit<Legal, Void>> hitList2 = getTotal(builder, boolQueryBuilder2);
-                total.addAll(hitList2);
-            }
-            if (!(flag3)) {
-                matchQueryBuilder = new MatchQueryBuilder("specific", queryInfo.getRoad());
-                boolQueryBuilder3.must(matchQueryBuilder);
-                List<SearchResult.Hit<Legal, Void>> hitList3 = getTotal(builder, boolQueryBuilder3);
-                total.addAll(hitList3);
-            }
-            System.out.println("size=" + total.size());
-            if ((fromInt + queryInfo.getPageSize()) < total.size()) {
-                hits = total.subList(fromInt, (fromInt + queryInfo.getPageSize()));
-            } else {
-                hits = total.subList(fromInt, total.size());
-            }
-            for (SearchResult.Hit<Legal, Void> hit : hits) {
-                Legal source = hit.source;
-                source.setId(hit.id);
-                legals.add(source);
-            }
-            data.setTotalPage(total.size());
-        }
-        data.setDate(legals);
+        data = screen(queryInfo,fromInt,boolQueryBuilder1,boolQueryBuilder2,boolQueryBuilder3,builder);
         return data;
     }
 
@@ -674,7 +560,7 @@ public class LegalServiceImpl implements LegalService {
         List<Term> terms = new ArrayList<>();
         for (SearchResult.Hit<Legal, Void> hit : hits) {
             Legal source = hit.source;
-            if(source.getTitle().contains(term.getTitle())){
+            if (source.getTitle().contains(term.getTitle())) {
                 List<Term> termList = source.getTerms();
                 for (Term t : termList) {
                     if (t.getItemId().equalsIgnoreCase(term.getItemId())) {
@@ -695,99 +581,4 @@ public class LegalServiceImpl implements LegalService {
     }
 }
 
-
-//    @Override
-//    public List<Term> select(Term term) {
-//        boolean indexExists = false;
-//        try {
-//            indexExists = jestClient.execute(new IndicesExists.Builder("term").build()).isSucceeded();
-//            if (indexExists) {
-//                //删除操作可添加索引类型 .type(indexType)
-//                jestClient.execute(new DeleteIndex.Builder("term").build());
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//        SearchSourceBuilder builder = new SearchSourceBuilder();
-//        SearchSourceBuilder builder2 = new SearchSourceBuilder();
-//        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-//        BoolQueryBuilder boolQueryBuilder2 = new BoolQueryBuilder();
-//        MatchQueryBuilder matchQueryBuilder1;
-//
-//        MatchQueryBuilder matchQueryBuilder4;
-//        if (term.getTitle() != null) {
-//            matchQueryBuilder1 = new MatchQueryBuilder("title", term.getTitle());
-//        } else {
-//            matchQueryBuilder1 = new MatchQueryBuilder("title", "");
-//        }
-//
-//        matchQueryBuilder4 = new MatchQueryBuilder("terms.itemId", term.getItemId());
-//
-//
-//        boolQueryBuilder.must(matchQueryBuilder1);
-//        builder.query(boolQueryBuilder);
-//
-//        String dslStr = builder.toString();
-//        Search search = new Search.Builder(dslStr).addIndex("legal").addType("_doc").build();
-//        SearchResult searchResult = null;
-//        try {
-//            searchResult = jestClient.execute(search);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//        List<SearchResult.Hit<Legal, Void>> hits = searchResult.getHits(Legal.class);
-//
-//        for (SearchResult.Hit<Legal, Void> hit : hits) {
-//            Legal source = hit.source;
-//            List<Term> terms = source.getTerms();
-//            for (Term term1 : terms) {
-//                Index index = new Index.Builder(term1).index("term").type("_doc").build();
-//                try {
-//                    jestClient.execute(index);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    return null;
-//                }
-//            }
-//        }
-//        boolQueryBuilder2.should(matchQueryBuilder2).should(matchQueryBuilder3).must(matchQueryBuilder4);
-//        builder2.query(boolQueryBuilder2);
-//        String dslStr2 = builder2.toString();
-//        System.out.println(dslStr2);
-//        Search search2 = new Search.Builder(dslStr2).addIndex("term").addType("_doc").build();
-//        SearchResult searchResult2 = null;
-//        try {
-//            searchResult2 = jestClient.execute(search2);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//        if (searchResult2 == null) {
-//            return null;
-//        }
-//        List<SearchResult.Hit<Term, Void>> hitList;
-//        try {
-//            hitList = searchResult2.getHits(Term.class);
-//        } catch (Exception e) {
-//            return null;
-//        }
-//
-//        List<Term> terms = new ArrayList<>();
-//        for (SearchResult.Hit<Term, Void> hit : hitList) {
-//            Term term3 = hit.source;
-//            System.out.println(term3);
-//            terms.add(term3);
-//        }
-//        List<Term> newTerms = new ArrayList<>();
-//        for (Term t : terms) {
-//            if (!newTerms.contains(t)) {
-//                newTerms.add(t);
-//            }
-//        }
-//        System.out.println(newTerms);
-//        return newTerms;
-//    }
-//}
 

@@ -29,35 +29,12 @@ public interface LegalService {
      */
     boolean deleteLegal(String id);
 
-    /**
-     * 更新
-     * @param file
-     * @param legal
-     * @param wb
-     * @return boolean
-     */
-    boolean updateLegal(MultipartFile file, Legal legal, Workbook wb);
 
     /**
      * 查询所有的法律法规
      * @return List<Legal>
      */
     List<Legal> selectAll() ;
-
-    /**
-     * 用户查询
-     * @return List<Legal>
-     */
-    List<Legal> selectNewLegal();
-
-    /**
-     * 分页查询（旧版）
-     * @param pno
-     * @param psize
-     * @return
-     * @throws Exception
-     */
-    List<Legal> selectByLimit(Integer pno,Integer psize);
 
     /**
      * 根据ID查询法律法规
@@ -73,12 +50,6 @@ public interface LegalService {
      */
     List<Legal> selectByLegalTitle(String title);
 
-    /**
-     * 筛选法律法规
-     * @param filters
-     * @return
-     */
-    List<Legal> filterLegal(List<String> filters);
 
     /**
      * 根据搜索ID查询法律法规
@@ -94,20 +65,6 @@ public interface LegalService {
      * @return
      */
     JsonData selectByTitle(QueryInfo queryInfo);
-
-
-//    /**
-//     * 标题搜索
-//     * @param kind
-//     * @param searchContent
-//     * @param pageNum
-//     * @param pageSize
-//     * @param specific
-//     * @return
-//     */
-//    JsonData selectByTitle(String kind, String searchContent, Integer pageNum, Integer pageSize,List<String> specific);
-
-
 
     /**
      * 查询总记录数

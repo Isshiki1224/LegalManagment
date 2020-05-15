@@ -143,16 +143,6 @@ public class LegalController {
 
     }
 
-    @RequestMapping("/screen")
-    @ResponseBody
-    @CrossOrigin
-    public JsonData screen(@RequestBody List<String> filters) {
-        System.out.println(filters);
-        data = new JsonData();
-        legalService.filterLegal(filters);
-        return data;
-    }
-
 
     @RequestMapping("/upload")
     @ResponseBody
@@ -181,7 +171,7 @@ public class LegalController {
         Workbook wb;
         String filename = "";
         String newPath = "";
-        String path = "D:/filepath";
+        String path = "C:/filepath";
         try {
             is = file.getInputStream();
             if (isExcel2003) {
